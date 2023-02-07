@@ -136,20 +136,27 @@ tp_image_utils::ByteMap byteMapFromMat(const cv::Mat& in)
   auto rows = size_t(in.rows);
   auto cols = size_t(in.cols);
 
-  if(in.type() != CV_8UC1)
-    return tp_image_utils::ByteMap();
-
-  tp_image_utils::ByteMap out(cols, rows);
-
+  if(in.type() == CV_8UC1)
   {
+    tp_image_utils::ByteMap out(cols, rows);
     uint8_t* o = out.data();
-    uint8_t* oMax = o+(rows*cols);
-    uint8_t* i = in.data;
-    for(; o<oMax; i++, o+=4)
-      (*o) = (*i);
+    for(size_t y=0; y<out.height(); y++)
+      for(size_t x=0; x<out.width(); x++, o++)
+        (*o) = in.at<uchar>(cv::Point(x,y));
+    return out;
   }
 
-  return out;
+  else if(in.type() == CV_8UC3)
+  {
+    tp_image_utils::ByteMap out(cols, rows);
+    uint8_t* o = out.data();
+    for(size_t y=0; y<out.height(); y++)
+      for(size_t x=0; x<out.width(); x++, o++)
+        (*o) = in.at<cv::Vec3b>(cv::Point(x,y)).val[2];
+    return out;
+  }
+
+  return tp_image_utils::ByteMap();
 }
 
 }
